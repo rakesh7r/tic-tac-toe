@@ -1,6 +1,7 @@
-import React, { useState } from "react"
+import React, { useContext, useState } from "react"
 import Board from "./Board"
 import { useParams } from "react-router-dom"
+import { GameContext } from "../App"
 
 function Play() {
     const { roomId } = useParams()
