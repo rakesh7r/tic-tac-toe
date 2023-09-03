@@ -34,7 +34,7 @@ function Cell({ id, marked = "" }) {
                     id,
                 })
             }}
-            className="w-16 h-16 bg-gray-300 rounded-md flex items-center justify-center text-gray-600 font-bold text-2xl"
+            className="w-20 h-20 bg-gray-300 rounded-md flex items-center justify-center text-gray-600 font-bold text-2xl"
         >
             {marked}
         </div>
