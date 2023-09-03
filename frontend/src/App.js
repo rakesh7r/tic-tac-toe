@@ -9,7 +9,7 @@ export const GameContext = createContext()
 
 function App() {
     const roomId = uuid()
-    const [board, setBoard] = useState([
+    const initialBoard = [
         [
             { marked: "", id: 1 },
             { marked: "", id: 2 },
@@ -25,15 +25,26 @@ function App() {
             { marked: "", id: 8 },
             { marked: "", id: 9 },
         ],
-    ])
+    ]
+    const [board, setBoard] = useState(initialBoard)
     const [player, setPlayer] = useState("X")
     const [winner, setWinner] = useState("")
     const [isDraw, setIsDraw] = useState(false)
 
     useEffect(() => {
         if (isDraw) {
-            alert("It's a draw!")
-        } else if (winner !== "") alert(`${winner} wins`)
+            window.alert("It's a draw!")
+            setBoard(initialBoard)
+            setPlayer("X")
+            setWinner("")
+            setIsDraw(false)
+        } else if (winner !== "") {
+            alert(`${winner} wins`)
+            setBoard(initialBoard)
+            setPlayer("X")
+            setWinner("")
+            setIsDraw(false)
+        }
     }, [isDraw, winner])
     return (
         <div>
