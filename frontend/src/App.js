@@ -7,6 +7,7 @@ import { createContext, useEffect, useState } from "react"
 import socket from "./io"
 import { checkDraw, checkWin, getCords } from "./utils/boardActions"
 import socketInitializer from "./io"
+import { isUserLoggedIn, signIn } from "./auth/signIn"
 
 export const GameContext = createContext()
 
@@ -36,6 +37,7 @@ function App() {
     const [player, setPlayer] = useState("X")
     const [winner, setWinner] = useState("")
     const [isDraw, setIsDraw] = useState(false)
+    const [userInfo, setUserInfo] = useState(undefined)
 
     useEffect(() => {
         if (isDraw) {
@@ -52,7 +54,18 @@ function App() {
             setIsDraw(false)
         }
     }, [isDraw, winner])
-
+    useEffect(() => {
+        const init = async () => {
+            await isUserLoggedIn(setUserInfo)
+        }
+        init()
+    }, [])
+    useEffect(() => {
+        if (userInfo === null) {
+            setUserInfo(signIn())
+        }
+        console.log(userInfo)
+    }, [userInfo])
     useEffect(() => {
         socket.on("isOnline", (socketId) => {
             socket.emit("isOnlineResponse", { socketId, status: true })

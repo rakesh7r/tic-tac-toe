@@ -2,9 +2,10 @@ import React, { useState } from "react"
 import { Link } from "react-router-dom"
 import { v4 as uuid } from "uuid"
 import { useNavigate } from "react-router-dom"
+import { signIn } from "../auth/signIn"
 
 function Home() {
-    const roomId = uuid().slice(0,7)
+    const roomId = uuid().slice(0, 7)
     const [roomIdInput, setRoomIdInput] = useState("")
 
     const navigate = useNavigate()
