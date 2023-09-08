@@ -1,7 +1,10 @@
 import io from "socket.io-client"
 
-export const socket = io.connect("http://localhost:5000", {
-    query: { userId: "username" },
-})
+const socketInitializer = (username) => {
+    const socket = io.connect("http://localhost:5000", {
+        query: { userId: username },
+    })
+    return socket
+}
 
-export default socket
+export default socketInitializer

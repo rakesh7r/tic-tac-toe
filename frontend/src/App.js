@@ -4,6 +4,9 @@ import Play from "./components/Play"
 import { v4 as uuid } from "uuid"
 import Home from "./components/Home"
 import { createContext, useEffect, useState } from "react"
+import socket from "./io"
+import { checkDraw, checkWin, getCords } from "./utils/boardActions"
+import socketInitializer from "./io"
 
 export const GameContext = createContext()
 
@@ -26,6 +29,9 @@ function App() {
             { marked: "", id: 9 },
         ],
     ]
+    const tempName = uuid()
+    const [username, setUsername] = useState(tempName)
+    const [socket, setSocket] = useState(socketInitializer(tempName))
     const [board, setBoard] = useState(initialBoard)
     const [player, setPlayer] = useState("X")
     const [winner, setWinner] = useState("")
@@ -46,6 +52,27 @@ function App() {
             setIsDraw(false)
         }
     }, [isDraw, winner])
+
+    useEffect(() => {
+        socket.on("isOnline", (socketId) => {
+            socket.emit("isOnlineResponse", { socketId, status: true })
+        })
+        socket.on("recive_broadcast_message", (data) => {
+            let brd = [...board]
+            const { row, col } = getCords(data.id)
+            brd[row][col]["marked"] = data.player
+            setBoard(brd)
+            console.log(data)
+            setTimeout(() => {
+                setPlayer(data.player === "X" ? "O" : "X")
+                setIsDraw(checkDraw(board))
+                setWinner(checkWin(board, data.player))
+            }, 50)
+        })
+        socket.on("userJoined", (data) => {
+            console.log(data)
+        })
+    }, [])
     return (
         <div>
             <GameContext.Provider
@@ -58,6 +85,10 @@ function App() {
                     setWinner,
                     isDraw,
                     setIsDraw,
+                    username,
+                    setUsername,
+                    socket,
+                    setSocket,
                 }}
             >
                 <Router>

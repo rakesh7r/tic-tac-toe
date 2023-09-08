@@ -7,29 +7,51 @@ require("dotenv").config()
 
 const io = new Server(server, {
     cors: {
-        // current client port is 3001 change it back when needed
+        // current client port is 3000 change it back when needed
         origin: process.env.CLIENT_URL,
         methods: ["GET", "POST"],
     },
 })
 
-io.on("connection", async (socket) => {
-    console.log("User Connected : ", socket.id)
-    console.log("userID : " + socket.handshake.query.userId)
+let users = {}
+let userMap = new Map()
+let rooms = {}
 
-    const sockets = await io.fetchSockets()
+io.on("connection", async (socket) => {
+    // const sockets = await io.fetchSockets()
+    const { userId } = socket.handshake.query
+    const socketId = socket.id
+    console.log({ userId, socketId })
+
+    socket.on("joinRoom", (room) => {
+        socket.join(room)
+        console.log("================================================")
+        if (!rooms[room]) {
+            rooms[room] = new Map()
+        }
+
+        userMap.set(socketId, userId)
+        userMap.forEach((value, key) => {
+            io.to(key).emit("isOnline", key)
+        })
+
+        console.log(userMap)
+        socket.on("isOnlineResponse", (response) => {
+            console.log({ response })
+        })
+
+        socket.emit("userJoined", users)
+    })
     socket.on("mark", (data) => {
         console.log(data)
     })
     // console.log(sockets)
-    socket.on("send_broadcast_message", (data) => {
+    socket.on("send_broadcast_message", (roomId, data) => {
         console.log(data)
-        socket.broadcast.emit("recive_broadcast_message", data.message)
-    })
-
-    socket.on("joinRoom", (data) => {
-        socket.join(data.room)
-        console.log(`user ${socket.id} joined ${data.room}`)
+        socket
+            .to(roomId)
+            .emit("recive_broadcast_message", { ...data, ...users })
+        console.log(users)
     })
 
     socket.on("sendMessage", (data) => {

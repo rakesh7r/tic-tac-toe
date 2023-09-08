@@ -6,7 +6,7 @@ function Board() {
     const { board, player } = useContext(GameContext)
     return (
         <div className="bg-gray-100 flex items-center justify-center h-screen">
-            <div className="bg-white p-4 shadow-md rounded-md grid grid-cols-3 gap-4">
+            <div className="bg-white p-4 shadow-md rounded-md grid grid-cols-2 gap-4">
                 <div className="col-span-1 text-center">
                     <div className="font-semibold text-lg mb-2">Player X</div>
                     <div
