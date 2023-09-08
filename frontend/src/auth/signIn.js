@@ -9,7 +9,11 @@ export const signIn = () => {
             console.log({ result })
             const credential = GoogleAuthProvider.credentialFromResult(result)
             console.log({ credential })
-            return result
+            return {
+                email: result.email,
+                name: result.displayName,
+                photoURL: result.photoURL,
+            }
             // dispatch(updateCreds(credential))
             // dispatch(updateUser(result))
             // const token = credential.accessToken
@@ -26,7 +30,12 @@ export const signIn = () => {
 
 export const isUserLoggedIn = async (setUserInfo) => {
     return await auth.onAuthStateChanged((user) => {
-        if (user) setUserInfo(user)
+        if (user)
+            setUserInfo({
+                email: user.email,
+                name: user.displayName,
+                photoURL: user.photoURL,
+            })
         else setUserInfo(null)
     })
 }

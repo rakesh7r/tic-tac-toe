@@ -30,9 +30,7 @@ function App() {
             { marked: "", id: 9 },
         ],
     ]
-    const tempName = uuid()
-    const [username, setUsername] = useState(tempName)
-    const [socket, setSocket] = useState(socketInitializer(tempName))
+    const [socket, setSocket] = useState(undefined)
     const [board, setBoard] = useState(initialBoard)
     const [player, setPlayer] = useState("X")
     const [winner, setWinner] = useState("")
@@ -62,29 +60,39 @@ function App() {
     }, [])
     useEffect(() => {
         if (userInfo === null) {
-            setUserInfo(signIn())
+            let user = signIn()
+            setSocket(socketInitializer(user.email))
+            setUserInfo(user)
+        } else if (userInfo !== undefined) {
+            console.log({ signedInUsr: userInfo })
+            setSocket(socketInitializer(userInfo.email))
         }
-        console.log(userInfo)
     }, [userInfo])
     useEffect(() => {
-        socket.on("isOnline", (socketId) => {
-            socket.emit("isOnlineResponse", { socketId, status: true })
-        })
-        socket.on("recive_broadcast_message", (data) => {
-            let brd = [...board]
-            const { row, col } = getCords(data.id)
-            brd[row][col]["marked"] = data.player
-            setBoard(brd)
-            console.log(data)
-            setTimeout(() => {
-                setPlayer(data.player === "X" ? "O" : "X")
-                setIsDraw(checkDraw(board))
-                setWinner(checkWin(board, data.player))
-            }, 50)
-        })
-        socket.on("userJoined", (data) => {
-            console.log(data)
-        })
+        console.log({ socket })
+    }, [socket])
+
+    useEffect(() => {
+        if (socket) {
+            socket.on("isOnline", (socketId) => {
+                socket.emit("isOnlineResponse", { socketId, status: true })
+            })
+            socket.on("recive_broadcast_message", (data) => {
+                let brd = [...board]
+                const { row, col } = getCords(data.id)
+                brd[row][col]["marked"] = data.player
+                setBoard(brd)
+                console.log(data)
+                setTimeout(() => {
+                    setPlayer(data.player === "X" ? "O" : "X")
+                    setIsDraw(checkDraw(board))
+                    setWinner(checkWin(board, data.player))
+                }, 50)
+            })
+            socket.on("userJoined", (data) => {
+                console.log(data)
+            })
+        }
     }, [])
     return (
         <div>
@@ -98,8 +106,6 @@ function App() {
                     setWinner,
                     isDraw,
                     setIsDraw,
-                    username,
-                    setUsername,
                     socket,
                     setSocket,
                 }}
