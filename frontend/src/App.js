@@ -1,10 +1,8 @@
 import "./App.css"
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Play from "./components/Play"
-import { v4 as uuid } from "uuid"
 import Home from "./components/Home"
 import { createContext, useEffect, useState } from "react"
-import socket from "./io"
 import { checkDraw, checkWin, getCords } from "./utils/boardActions"
 import socketInitializer from "./io"
 import { isUserLoggedIn, signIn } from "./auth/signIn"
@@ -12,7 +10,6 @@ import { isUserLoggedIn, signIn } from "./auth/signIn"
 export const GameContext = createContext()
 
 function App() {
-    const roomId = uuid()
     const initialBoard = [
         [
             { marked: "", id: 1 },
@@ -68,10 +65,8 @@ function App() {
             setSocket(socketInitializer(userInfo.email))
         }
     }, [userInfo])
-    useEffect(() => {
-        console.log({ socket })
-    }, [socket])
 
+    //socket calls
     useEffect(() => {
         if (socket) {
             socket.on("isOnline", (socketId) => {
@@ -93,7 +88,8 @@ function App() {
                 console.log(data)
             })
         }
-    }, [])
+    }, [socket])
+    
     return (
         <div>
             <GameContext.Provider

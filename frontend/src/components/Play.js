@@ -5,18 +5,17 @@ import { GameContext } from "../App"
 
 function Play() {
     const { roomId } = useParams()
-    const { username, socket } = useContext(GameContext)
+    const { socket } = useContext(GameContext)
     const [turn, setTurn] = useState("O")
-    const createRoom = () => {}
     const [hasJoined, setHasJoined] = useState(false)
     useEffect(() => {
-        if (!hasJoined) {
+        if (!hasJoined && socket) {
             socket.emit("joinRoom", roomId, (acknowledgmentMessage) => {
                 console.log(acknowledgmentMessage) // Handle the acknowledgment message from the server
             })
             setHasJoined((prevState) => !prevState)
         }
-    }, [])
+    }, [socket])
     return (
         <div className="App">
             <Board />

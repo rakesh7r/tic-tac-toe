@@ -15,13 +15,13 @@ function Home() {
     }
     return (
         <div className="flex justify-center align-center max-h-10">
-            <p>
+            <div>
                 <Link to={`/room/${roomId}`}>
                     <button>Create room</button>
                 </Link>
                 <div className="flex">
                     <hr />
-                    <p>OR</p>
+                    OR
                     <hr />
                 </div>
                 <input
@@ -39,7 +39,7 @@ function Home() {
                 >
                     join
                 </button>
-            </p>
+            </div>
         </div>
     )
 }
