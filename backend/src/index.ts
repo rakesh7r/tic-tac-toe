@@ -8,5 +8,9 @@ const gameHandler = new GameHandler()
 wss.on("connection", (ws: WebSocket) => {
     ws.on("error", console.error)
     gameHandler.actionHandler(ws)
-    ws.on("disconnect", () => gameHandler.removeUser(ws))
+    console.log("New connection")
+    ws.on("close", () => {
+        console.log("Connection closed")
+        gameHandler.removeUser(ws)
+    })
 })

@@ -7,5 +7,9 @@ const gameHandler = new GameHandler_1.GameHandler();
 wss.on("connection", (ws) => {
     ws.on("error", console.error);
     gameHandler.actionHandler(ws);
-    ws.on("disconnect", () => gameHandler.removeUser(ws));
+    console.log("New connection");
+    ws.on("close", () => {
+        console.log("Connection closed");
+        gameHandler.removeUser(ws);
+    });
 });

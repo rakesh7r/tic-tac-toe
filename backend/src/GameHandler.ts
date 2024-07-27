@@ -9,29 +9,35 @@ export class GameHandler {
     public addUser(user: WebSocket) {
         if (this.pendingUser === null) {
             this.pendingUser = user
-            user.send(JSON.stringify({ type: "ack", payload: "Waiting for opponent" }))
+            user.send(JSON.stringify({ type: "waiting", payload: "Waiting for opponent" }))
         } else {
             const game = new Game(this.pendingUser, user)
             this.games.push(game)
-            user.send(JSON.stringify({ type: "ack", payload: "Game started" }))
-            this.pendingUser.send(JSON.stringify({ type: "ack", payload: "Game started" }))
+            this.pendingUser.send(JSON.stringify({ type: "game_started", message: "Game started", symbol: "X" }))
             this.pendingUser = null
+            user.send(JSON.stringify({ type: "game_started", message: "Game started", symbol: "O" }))
         }
     }
     public removeUser(user: WebSocket) {
         if (this.pendingUser === user) {
             this.pendingUser = null
+        } else {
+            const game = this.games.find((game) => game.user1 === user || game.user2 === user)
+            if (game) {
+                this.games = this.games.filter((game) => game !== game)
+                const opponent = game.user1 === user ? game.user2 : game.user1
+                opponent.send(JSON.stringify({ type: "opponent_left", message: "Opponent left the game" }))
+            }
         }
-        const idx = this.games.findIndex((game: Game) => game.user1 === user || game.user2 === user)
-        const activeUser = this.games[idx].user1 === user ? this.games[idx].user2 : this.games[idx].user1
-        activeUser.send(JSON.stringify({ type: "ack", payload: "Game abandoned" }))
     }
     public makeMove(user: WebSocket, move: { x: number; y: number }) {
         const game = this.games.find((game) => game.user1 === user || game.user2 === user)
+        console.log("board", game?.board)
         if (game) {
+            console.log("making move", move)
             game.makeMove(move.x, move.y, user)
             const opponent = game.user1 === user ? game.user2 : game.user1
-            opponent.send(JSON.stringify({ type: "update", payload: game.getBoard() }))
+            opponent.send(JSON.stringify({ type: "update_board", payload: game.getBoard() }))
         }
     }
     public restart(user: WebSocket) {
@@ -39,12 +45,13 @@ export class GameHandler {
         if (game) {
             game.restart()
             const opponent = game.user1 === user ? game.user2 : game.user1
-            opponent.send(JSON.stringify({ type: "update", payload: game.getBoard() }))
+            opponent.send(JSON.stringify({ type: "update_board", payload: game.getBoard() }))
         }
     }
 
     public actionHandler(user: WebSocket) {
         user.on("message", (message) => {
+            console.log(message.toString())
             const data = JSON.parse(message.toString())
             if (data.type === "init_game") {
                 this.addUser(user)

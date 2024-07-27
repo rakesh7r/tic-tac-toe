@@ -1,13 +1,64 @@
 import React, { useState } from "react"
 import Layout from "./Layout"
+import { SocketContext } from "../App"
 
 function Board() {
+    const socket = React.useContext(SocketContext)?.socket
+    const response = React.useContext(SocketContext)?.response
+    const [waiting, setWaiting] = useState(false)
+    const [gameStarted, setGameStarted] = useState(false)
     const [board, setBoard] = useState([
         ["", "", ""],
         ["", "", ""],
         ["", "", ""],
     ])
+    const [symbol, setSymbol] = useState("")
     const [turn, setTurn] = useState("")
+
+    const newGame = () => {
+        setBoard([
+            ["", "", ""],
+            ["", "", ""],
+            ["", "", ""],
+        ])
+        setSymbol("")
+        setTurn("")
+        socket?.send(JSON.stringify({ type: "init_game" }))
+    }
+    const toggleTurn = () => {
+        setTurn((prevTurn) => (prevTurn === "X" ? "O" : "X"))
+    }
+    React.useEffect(() => {
+        if (response) {
+            const data = JSON.parse(response)
+            if (data.type === "waiting") {
+                setWaiting(true)
+            } else if (data.type === "game_started") {
+                setWaiting(false)
+                setGameStarted(true)
+                setSymbol(data.symbol)
+                setTurn("X")
+            } else if (data.type === "update_board") {
+                console.log(data)
+                setBoard(data.payload)
+                toggleTurn()
+            } else if (data.type === "opponent_left") {
+                setGameStarted(false)
+                setWaiting(false)
+            }
+        }
+    }, [response])
+    console.log(response)
+
+    const makeMove = (x: number, y: number) => {
+        if (board[x][y] === "" && turn === symbol) {
+            const newBoard = [...board]
+            newBoard[x][y] = symbol
+            setBoard(newBoard)
+            setTurn(turn === "X" ? "O" : "X")
+            socket?.send(JSON.stringify({ type: "make_move", move: { x, y } }))
+        }
+    }
 
     return (
         <Layout>
@@ -32,6 +83,9 @@ function Board() {
                             <div
                                 key={i + j}
                                 className="cell bg-lightpurple text-white flex items-center justify-center text-4xl hover:bg-purplehover"
+                                onClick={() => {
+                                    makeMove(i, j)
+                                }}
                             >
                                 {cell}
                             </div>
@@ -39,8 +93,18 @@ function Board() {
                     )}
                 </div>
                 <div>
-                    {turn !== '' && <div className={`${turn === 'x' ? 'bg-skyblue' : 'bg-yellow'} text-black p-2 w-full rounded-md items-center font-bold`}>{turn} turn</div>}
-                    <button className="bg-gray text-black p-2 w-full rounded-md font-bold">New Game</button>
+                    {gameStarted && (
+                        <div
+                            className={`btn flex flex-row justify-center ${turn === "X" ? "bg-skyblue" : "bg-yellow"} `}
+                        >
+                            {turn} turn
+                        </div>
+                    )}
+                    {!gameStarted && (
+                        <button className="bg-gray btn" onClick={() => newGame()}>
+                            {!waiting ? <p>New Game</p> : "Waiting for opponent"}
+                        </button>
+                    )}
                 </div>
             </div>
         </Layout>
