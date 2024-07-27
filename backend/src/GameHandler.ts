@@ -7,6 +7,7 @@ export class GameHandler {
     public constructor() {}
 
     public addUser(user: WebSocket) {
+        this.games = this.games.filter((game) => game.user1 !== user && game.user2 === user)
         if (this.pendingUser === null) {
             this.pendingUser = user
             user.send(JSON.stringify({ type: "waiting", payload: "Waiting for opponent" }))
@@ -32,12 +33,22 @@ export class GameHandler {
     }
     public makeMove(user: WebSocket, move: { x: number; y: number }) {
         const game = this.games.find((game) => game.user1 === user || game.user2 === user)
-        console.log("board", game?.board)
         if (game) {
-            console.log("making move", move)
             game.makeMove(move.x, move.y, user)
             const opponent = game.user1 === user ? game.user2 : game.user1
             opponent.send(JSON.stringify({ type: "update_board", payload: game.getBoard() }))
+            if (game.isDraw()) {
+                game.user1.send(JSON.stringify({ type: "game_over", message: "Draw" }))
+                game.user2.send(JSON.stringify({ type: "game_over", message: "Draw" }))
+                return
+            }
+            if (game.isGameOver()) {
+                const winner = game.getWinner()
+                const user1Won = winner === "X"
+                game.user1.send(JSON.stringify({ type: "game_over", message: user1Won ? "You won" : "You lose" }))
+                game.user2.send(JSON.stringify({ type: "game_over", message: !user1Won ? "You won" : "You lose" }))
+                return
+            }
         }
     }
     public restart(user: WebSocket) {
@@ -46,6 +57,20 @@ export class GameHandler {
             game.restart()
             const opponent = game.user1 === user ? game.user2 : game.user1
             opponent.send(JSON.stringify({ type: "update_board", payload: game.getBoard() }))
+            user.send(
+                JSON.stringify({
+                    type: "restart",
+                    message: "Game restarted",
+                    symbol: user === game.user1 ? "X" : "O",
+                })
+            )
+            opponent.send(
+                JSON.stringify({
+                    type: "restart",
+                    message: "Game restarted",
+                    symbol: user === game.user1 ? "X" : "O",
+                })
+            )
         }
     }
 

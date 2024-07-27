@@ -7,6 +7,7 @@ function Board() {
     const response = React.useContext(SocketContext)?.response
     const [waiting, setWaiting] = useState(false)
     const [gameStarted, setGameStarted] = useState(false)
+    const [gameOver, setGameOver] = useState(false)
     const [board, setBoard] = useState([
         ["", "", ""],
         ["", "", ""],
@@ -23,6 +24,7 @@ function Board() {
         ])
         setSymbol("")
         setTurn("")
+        setGameOver(false)
         socket?.send(JSON.stringify({ type: "init_game" }))
     }
     const toggleTurn = () => {
@@ -39,12 +41,25 @@ function Board() {
                 setSymbol(data.symbol)
                 setTurn("X")
             } else if (data.type === "update_board") {
-                console.log(data)
                 setBoard(data.payload)
                 toggleTurn()
             } else if (data.type === "opponent_left") {
+                alert(data.message)
                 setGameStarted(false)
                 setWaiting(false)
+            } else if (data.type === "game_over") {
+                setGameStarted(false)
+                setGameOver(true)
+                alert(data.message)
+            } else if (data.type === "restart") {
+                setBoard([
+                    ["", "", ""],
+                    ["", "", ""],
+                    ["", "", ""],
+                ])
+                setGameOver(false)
+                setGameStarted(true)
+                setTurn("X")
             }
         }
     }, [response])
@@ -59,7 +74,11 @@ function Board() {
             socket?.send(JSON.stringify({ type: "make_move", move: { x, y } }))
         }
     }
-
+    const restart = () => {
+        setGameOver(false)
+        setGameStarted(true)
+        socket?.send(JSON.stringify({ type: "restart" }))
+    }
     return (
         <Layout>
             <div className="bg-darkpurple p-12 rounded-lg shadow-lg shadow-purplehover flex flex-col gap-9">
@@ -92,13 +111,18 @@ function Board() {
                         ))
                     )}
                 </div>
-                <div>
+                <div className="flex-col justify-center items-center gap-4">
                     {gameStarted && (
                         <div
                             className={`btn flex flex-row justify-center ${turn === "X" ? "bg-skyblue" : "bg-yellow"} `}
                         >
                             {turn} turn
                         </div>
+                    )}
+                    {gameOver && (
+                        <button className="bg-gray btn mb-6" onClick={() => restart()}>
+                            <p>Restart</p>
+                        </button>
                     )}
                     {!gameStarted && (
                         <button className="bg-gray btn" onClick={() => newGame()}>
