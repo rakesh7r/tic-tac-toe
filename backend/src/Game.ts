@@ -24,7 +24,23 @@ export class Game {
     public getBoard() {
         return this.board
     }
-
+    public restart() {
+        this.board = [
+            ["", "", ""],
+            ["", "", ""],
+            ["", "", ""],
+        ]
+    }
+    public isDraw() {
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (this.board[i][j] === "") {
+                    return false
+                }
+            }
+        }
+        return true
+    }
     public isGameOver() {
         // Check rows
         for (let i = 0; i < 3; i++) {
@@ -47,20 +63,11 @@ export class Game {
             }
         }
         // Check diagonals
-        if (
-            this.board[0][0] !== "" &&
-            this.board[0][0] === this.board[1][1] &&
-            this.board[0][0] === this.board[2][2]
-        )
+        if (this.board[0][0] !== "" && this.board[0][0] === this.board[1][1] && this.board[0][0] === this.board[2][2])
             return true
 
-        if (
-            this.board[0][2] !== "" &&
-            this.board[0][2] === this.board[1][1] &&
-            this.board[0][2] === this.board[2][0]
-        )
+        if (this.board[0][2] !== "" && this.board[0][2] === this.board[1][1] && this.board[0][2] === this.board[2][0])
             return true
-
         return false
     }
 }
