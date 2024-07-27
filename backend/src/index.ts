@@ -19,7 +19,9 @@ wss.on("connection", (ws: WebSocket) => {
         gameHandler.removeUser(ws)
     })
 })
-
+app.get("/", (req, res) => {
+    res.send("App is up and running")
+})
 // Start the server
 const PORT = process.env.PORT || 8080
 server.listen(PORT, () => {
