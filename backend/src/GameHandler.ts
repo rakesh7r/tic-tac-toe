@@ -45,8 +45,12 @@ export class GameHandler {
             if (game.isGameOver()) {
                 const winner = game.getWinner()
                 const user1Won = winner === "X"
-                game.user1.send(JSON.stringify({ type: "game_over", message: user1Won ? "You won" : "You lose" }))
-                game.user2.send(JSON.stringify({ type: "game_over", message: !user1Won ? "You won" : "You lose" }))
+                game.user1.send(
+                    JSON.stringify({ type: "game_over", message: user1Won ? "You won" : "You lose", winner })
+                )
+                game.user2.send(
+                    JSON.stringify({ type: "game_over", message: !user1Won ? "You won" : "You lose", winner })
+                )
                 return
             }
         }

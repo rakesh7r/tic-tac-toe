@@ -8,6 +8,7 @@ function Board() {
     const [waiting, setWaiting] = useState(false)
     const [gameStarted, setGameStarted] = useState(false)
     const [gameOver, setGameOver] = useState(false)
+    const [wins, setWins] = useState({ X: 0, O: 0, draw: 0 })
     const [board, setBoard] = useState([
         ["", "", ""],
         ["", "", ""],
@@ -51,6 +52,23 @@ function Board() {
                 setGameStarted(false)
                 setGameOver(true)
                 alert(data.message)
+                setWins((prevWins) => {
+                    if (data.message === "Draw")
+                        return {
+                            ...prevWins,
+                            draw: prevWins.draw + 1,
+                        }
+                    else if (data.winner === "X") {
+                        return {
+                            ...prevWins,
+                            X: prevWins.X + 1,
+                        }
+                    } else
+                        return {
+                            ...prevWins,
+                            O: prevWins.O + 1,
+                        }
+                })
             } else if (data.type === "restart") {
                 setBoard([
                     ["", "", ""],
@@ -82,18 +100,21 @@ function Board() {
     return (
         <Layout>
             <div className="bg-darkpurple p-12 rounded-lg shadow-lg shadow-purplehover flex flex-col gap-9">
+                <div className="w-full flex flex-row justify-center items-center">
+                    {symbol && <span className="font-bold">You are {symbol}</span>}{" "}
+                </div>
                 <div className="grid grid-cols-3 gap-2">
                     <div className="player-card bg-skyblue">
                         <span>Player X</span>
-                        <span>0</span>
+                        <span>{wins.X}</span>
                     </div>
                     <div className="player-card bg-lightblue">
                         <span>Draw</span>
-                        <span>0</span>
+                        <span>{wins.draw}</span>
                     </div>
                     <div className="player-card  bg-yellow">
                         <span>Player O</span>
-                        <span>0</span>
+                        <span>{wins.O}</span>
                     </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 mt-4">
