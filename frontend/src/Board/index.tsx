@@ -8,7 +8,8 @@ function Board() {
     const [waiting, setWaiting] = useState(false)
     const [gameStarted, setGameStarted] = useState(false)
     const [gameOver, setGameOver] = useState(false)
-    const [wins, setWins] = useState({ X: 0, O: 0, draw: 0 })
+    const initialWinsState = { X: 0, O: 0, draw: 0 }
+    const [wins, setWins] = useState(initialWinsState)
     const [board, setBoard] = useState([
         ["", "", ""],
         ["", "", ""],
@@ -27,6 +28,7 @@ function Board() {
         setTurn("")
         setGameOver(false)
         socket?.send(JSON.stringify({ type: "init_game" }))
+        setWins(initialWinsState)
     }
     const toggleTurn = () => {
         setTurn((prevTurn) => (prevTurn === "X" ? "O" : "X"))
