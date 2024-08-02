@@ -10,5 +10,5 @@
 
 #### That's it, try opening *http://localhost:80* in your browser.
 
-Thanks, 
+Thanks, \
 Rakesh G.
